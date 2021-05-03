@@ -33,6 +33,8 @@ const MessageTextInput = styled(TextInput)`
 
 export const Form = () => {
   const [signature, setSignature] = useState<String>("");
+  const [resultVerify, setResultVerify] = useState<String>("");
+  const [pubkey, setPubkey] = useState<String>("");
 
   const {
     register,
@@ -43,8 +45,13 @@ export const Form = () => {
   const onSubmit = handleSubmit(async (data) => {
     const promise = await import("elliptic-curve");
     const result = promise.sign(data.privateKey, data.message);
+    const resultPubkey = promise.get_pubkey(data.privateKey);
 
+    const resultVerify = promise.verify(resultPubkey, data.message, result);
+
+    setPubkey(resultPubkey);
     setSignature(result);
+    setResultVerify(resultVerify);
   });
 
   return (
@@ -54,21 +61,29 @@ export const Form = () => {
           <Row>
             <PrivateKeyTextInput
               {...register("privateKey")}
-              placeholder="Please enter your private key here"
-              testId="private-key"
+              placeholder='Please enter your private key here'
+              testId='private-key'
             />
             <MessageTextInput
               {...register("message")}
-              placeholder="Please enter your message here"
-              testId="message"
+              placeholder='Please enter your message here'
+              testId='message'
             />
           </Row>
           <Signature>{signature}</Signature>
           <Row>
-            <Button onClick={onSubmit} testId="submit" disabled={!isDirty}>
+            <Button onClick={onSubmit} testId='submit' disabled={!isDirty}>
               Sign
             </Button>
           </Row>
+          <div>
+            Result pubkey: <br />
+            {pubkey}
+          </div>
+          <div>
+            Result verify: <br />
+            {resultVerify}
+          </div>
         </Content>
       </Wrapper>
     </form>
